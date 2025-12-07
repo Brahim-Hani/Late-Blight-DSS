@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Robot</title>
+    <link rel="stylesheet" href="farm.css">
+</head>
+
+<body>
+
+  <div class="background"></div>
+
+  <div class="side_bar">
+    <p style="margin-top: -10px; margin-bottom: -15px;"><b>Settings : </b></p>
+    <button id="rosToggleBtn" class="button">Start System</button>
+      
+    <div class="auto_navigation">
+        <p>Auto Navigation :</p>
+        <label class="switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="auto_spraying">
+        <p>Auto Spraying :</p>
+        <label class="spray_switch switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="power_button">
+        <p>Power :</p>
+        <label class="switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="hide_notifications">
+        <p>Camera :</p>
+        <label class="switch blight_switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="weather_division">
+        
+            <h2>📍 Weather in <span id="city">-</span></h2>
+            <p id="weather_time"></p>
+            <p id="weather_date"></p>
+            <p>🌡️ Temp: <span id="current_temp">-</span></p>
+            <p>💧 Humidity: <span id="current_humidity">-</span></p>
+            <p>🌬️ Wind: <span id="current_wind">-</span></p>
+            <p>📊 Status: <span id="current_status">-</span></p>
+        
+    </div>
+
+    <div class="spraying_devision" style="text-align: center;">
+        <h3> Last spray : </h3>
+        <div id="log"><br><span id="sprayLog"></span></div>
+        
+    </div>
+
+    <div class="warnings_devision">
+        <h3 style="text-align: center; "> Condition warnings : </h3>
+        <div id="warnings-list" class="warnings-scrollable">
+            
+            <!-- Warnings will be appended here -->
+        </div>
+    </div>
+    
+
+    <div class="status_devision">
+        <div class="status_warnings" id="blightWarnings" style="text-align: center; margin-left: 3px;">
+            <h3 style="text-align: center;">Blight status :</h3>
+            
+
+            
+        </div>
+        <div class="status_map">
+            <h3 style="color: white;">Detected Blight Images</h3>
+            <div id="gallery"></div>
+        </div>
+    </div>
+    
+
+    <div class="control_devision">
+        <h3 style="text-align: center;">Spray control panel</h3>
+        <div class="sprayModeDisplay">
+        <strong>Mode:</strong> <span id="sprayModeDisplay">manual</span>
+        </div>
+        <div id="status"><strong>Status:</strong> <span id="sprayStatus">Waiting...</span></div>
+
+        <div id="spray-control-container"></div>
+
+        <div class="control_buttons">
+            <button class="button" onclick="sendSprayCommand()">SPRAY</button>
+        </div>
+
+        <div id="notifications-container">
+            <h4 style="text-align: center;">📝 Notifications</h4>
+            <div id="notifications-list"></div>
+        </div>
+          
+    </div>
+
+  </div>
+  
+  <script src="roslib.min.js"></script>
+  <script src="ros_connection.js"></script>
+  <script>
+    let systemRunning = false; // Track system status
+
+    const toggleBtn = document.getElementById('rosToggleBtn');
+
+    async function checkSystemStatus() {
+      try {
+        const res = await fetch('http://localhost:5000/status');
+        const data = await res.json();
+        systemRunning = data.status === 'started';
+        toggleBtn.textContent = systemRunning ? 'Stop System' : 'Start System';
+      } catch (err) {
+        console.warn('Could not fetch status:', err);
+        systemRunning = false;
+        toggleBtn.textContent = 'Start System';
+      }
+    }
+
+    async function toggleSystem() {
+      const endpoint = systemRunning ? 'stop' : 'start';
+      try {
+        const res = await fetch(`http://localhost:5000/${endpoint}`, { method: 'POST' });
+        const data = await res.json();
+        console.log(`${endpoint} response:`, data);
+        systemRunning = !systemRunning;
+        toggleBtn.textContent = systemRunning ? 'Stop System' : 'Start System';
+      } catch (err) {
+        console.error(`${endpoint} error:`, err);
+      }
+    }
+
+    toggleBtn.addEventListener('click', toggleSystem);
+    checkSystemStatus(); // Initial check on page load
+  </script>
+  
+<script src="time.js"></script>
+
+<script src="weather.js"></script>
+<script src="camera.js"></script>
+<script src="blight.js"></script>
+
+<script src="spray.js"></script>
+<script src="spray_modes.js"></script>
+<script src="spray_notifications.js"></script>
+<script>
+    const blightImageListener = new ROSLIB.Topic({
+      ros: ros,
+      name: '/blight_image',
+      messageType: 'std_msgs/String'
+    });
+  
+    blightImageListener.subscribe(function (message) {
+      if (!message.data) return;
+  
+      const img = document.createElement('img');
+      img.src = "data:image/jpeg;base64," + message.data;
+      img.alt = "Blight detected image";
+  
+      const gallery = document.getElementById('gallery');
+      gallery.appendChild(img);
+  
+      console.log("✅ Image added to status_map gallery");
+    });
+  </script>
+  
+
+
+
+
+
+
+
+  
+
+</body>
+</html>

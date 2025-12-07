@@ -1,0 +1,6 @@
+source;share/spray_decider/hook/pythonpath.ps1
+source;share/spray_decider/hook/pythonpath.dsv
+source;share/spray_decider/hook/pythonpath.sh
+source;share/spray_decider/hook/ament_prefix_path.ps1
+source;share/spray_decider/hook/ament_prefix_path.dsv
+source;share/spray_decider/hook/ament_prefix_path.sh

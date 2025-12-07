@@ -1,0 +1,72 @@
+In this file we are going to explain the general layout of the system , and then how to successfully run it .
+
+1 - How is the project built? 
+	The project has three sections :
+	
+		a - ROS System : 
+			The workspace that contains all the packages is named "ros2_blight_ws" , inside of it you can see the source folder "src" , this folder contains all the ros2 packages needed for 
+			the system. 4 Total packages are built : blight_detector (AI) , weather_reporter (Forecasts) , spray_scheduler_pkg , spray_decider,  inside of each there are our 4 nodes that 
+			construct the system .
+		b - Web Setup : 
+			The workspace that contains all the web files is named "Farm_contro_panel" , inside of it you can see three four of files : html , css , js files and the images used.
+		c - ROS - WEB Comms : 
+			There are two launchers : websocket launcher for web connection with rosbridge and the nodes launcher (launches all four nodes when called).
+			and than we get to the python file that controls the system ( starts and pauses ) named "backend.py" . 
+
+2 - How can you start the system? 
+	This steps assume that the user has already installed linux as the OS preferably Ubunti 20.04 ( Jammy ) . 
+	
+	First step is installing ROS2 :
+		sudo apt install software-properties-common -y
+		sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+		echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+		http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo "$UBUNTU_CODENAME") main" | \
+		sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+		sudo apt update
+		sudo apt install ros-humble-desktop -y
+		echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+		source ~/.bashrc
+		sudo apt install python3-colcon-common-extensions -y
+	
+		A - Install libraries and dependancies with terminal commands :
+			Python 3.11.3 : 
+				sudo apt update
+				sudo apt install python3
+				
+			OpenCV : 
+				sudo apt update
+				sudo apt install python3-opencv
+			
+			Ultralytics :
+				sudo apt update
+				sudo apt install python3-pip
+				pip3 install --upgrade pip
+				python3 -m venv yolo-env
+				source yolo-env/bin/activate
+				pip install ultralytics
+
+			Requests :
+				pip3 install requests
+			
+			Websocket : 
+				pip install websocket-client
+				pip install websockets
+			
+			psutile :
+				pip3 install psutil
+
+			Flask :
+				pip3 install flask
+				
+			Flask_cors :
+				pip3 install flask-cors
+
+		B - Run the websocket launcher : 
+			ros2 launch spray_scheduler_pkg rosbridge_alone.launch.py
+		C - Launch the website ( open the farm.html file )
+		D - Launch the backend python file : 
+			navigate to the directory of the backend.py and run it :
+			python3 backend.py
+	Now you can start the system from the start button on the website , make sure you are connected to the internet connection to get the scheduling to work (weather data need internet) .
+	
